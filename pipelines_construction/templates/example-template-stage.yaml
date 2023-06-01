@@ -1,0 +1,16 @@
+parameters:
+  - name: stageCondition
+    type: string
+
+  - name: stageDependsOn
+    type: object
+    default: []
+    
+
+- stage: stage2
+  dependsOn: ${{ parameters.stageDependsOn }}
+  condition: ${{ parameters.stageCondition }}
+  jobs:
+  - job: B
+    steps:
+      - script: echo 2

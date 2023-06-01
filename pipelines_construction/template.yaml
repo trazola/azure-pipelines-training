@@ -1,0 +1,22 @@
+stages:
+- stage: Build
+  pool:
+    vmImage: 'ubuntu-latest'
+  jobs:
+  - job: Build
+    steps:
+    - script: echo Building...
+
+  - job: CDaaSBuild
+    dependsOn: Build
+    pool:
+      name: 'CDaaSLinux'
+    steps:
+    - script: |
+        echo Building CDaaS...
+        curl https://castle-api.ing.net/docs -v
+
+- template: templates/example-template-stage.yaml
+  parameters:
+    stageCondition: and(eq(variables['Build.SourceBranch'], 'refs/heads/main'), succeeded())
+    stageDependsOn: [Build]

@@ -1,0 +1,46 @@
+stages:
+- stage: INIT
+  pool:
+    vmImage: 'ubuntu-latest'
+  jobs:
+  - job: INIT
+    steps:
+    - script: echo INIT...
+
+- stage: Build
+  pool:
+    vmImage: 'ubuntu-latest'
+  jobs:
+  - job: Build
+    steps:
+    - script: echo Building...
+
+  - job: CDaaSBuild
+    dependsOn: Build
+    pool:
+      name: 'CDaaSLinux'
+    steps:
+    - script: |
+        echo Building CDaaS...
+        curl https://castle-api.ing.net/docs -v
+
+- stage: Test
+  dependsOn: Build
+  jobs:
+  - job: Test
+    steps:
+    - script: echo Testing...
+
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+  - job: Deploy
+    steps:
+    - script: echo Deploying...
+
+- stage: Other
+  dependsOn: [Test, Deploy]
+  jobs:
+  - job: Other
+    steps:
+    - script: echo Deploying...

@@ -1,0 +1,38 @@
+pool:
+  vmImage: 'ubuntu-latest'
+
+jobs:
+- job: FirstJob
+  steps:
+  - script: echo $(System.JobId)
+    displayName: 'Show Job ID'
+
+  - script: echo $(Build.ArtifactStagingDirectory)
+    displayName: 'Show Staging Directory'
+
+  - script: echo Hello World >> myfile.txt
+    displayName: 'Create File'
+
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '.'
+      contents: '**/myfile.txt'
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: exampleArtifact
+
+
+- job: Second Job
+  dependsOn: FirstJob
+  steps:
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Download activities artifact
+    inputs:
+      patterns: exampleArtifact/**
+
+  - script: cat $(Pipeline.Workspace)/exampleArtifact/myfile.txt
+    displayName: Display my File

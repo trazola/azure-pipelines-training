@@ -1,0 +1,87 @@
+jobs:
+- job: PrepareData
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.11'
+
+  - script: |
+      pip install httpx
+    displayName: 'Install python requirements'
+
+  - task: PythonScript@0
+    displayName: 'Download Random Activities'
+    inputs:
+      scriptSource: 'inline'
+      script: |
+        import json
+        from typing import Any
+
+        from httpx import Client
+
+        boredapi_client = Client(base_url="https://www.boredapi.com/api")
+
+
+        def get_activities(number: int) -> list[dict[str, Any]]:
+            activities = []
+            for _ in range(number):
+                response = boredapi_client.get(url="/activity")
+                response.raise_for_status()
+                activities.append(response.json())
+            return activities
+
+
+        def save_data_as_json(data: Any, file_name: str) -> None:
+            with open(file=file_name, mode="w") as json_file:
+                json.dump(obj=data, fp=json_file)
+
+
+        random_activities = get_activities(number=20)
+        save_data_as_json(data=random_activities, file_name="random_activities.json")
+
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '.'
+      contents: '**/random_activities.json'
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: activities
+
+- job: AnalysisData
+  pool:
+    name: 'CDaaSLinux'
+  dependsOn:
+    - PrepareData
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.11'
+  - task: DownloadPipelineArtifact@2
+    displayName: Download activities artifact
+    inputs:
+      patterns: activities/**
+
+  - task: PythonScript@0
+    displayName: 'Show all Activities'
+    inputs:
+      scriptSource: 'inline'
+      script: |
+        import json
+        from typing import Any
+
+
+        def load_data_from_json(file_path: str) -> Any:
+            with open(file=file_path) as json_file:
+                return json.load(fp=json_file)
+
+        activities = load_data_from_json(
+            file_path="$(Pipeline.Workspace)/activities/random_activities.json"
+        )
+
+        for activity in activities:
+            print(activity)

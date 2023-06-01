@@ -1,0 +1,8 @@
+steps:
+- script: |
+    echo $(Agent.OS)
+    echo $(Build.BuildId)
+    pwd
+    ls
+    printenv
+  displayName: 'Show system variables'

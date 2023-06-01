@@ -1,0 +1,36 @@
+pool:
+  vmImage: 'ubuntu-latest'
+  
+
+steps:
+- script: echo Hello, ING!
+  displayName: 'Hello script'
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.11'
+
+- task: PythonScript@0
+  displayName: 'Python factorial'
+  inputs:
+    scriptSource: 'inline'
+    script: |
+      from functools import reduce
+      from operator import mul
+
+      def factorial(number: int) -> int:
+          return reduce(mul, range(1, number + 1), 1)
+      
+      print(factorial(number=10))
+
+- task: PythonScript@0
+  displayName: 'Check Py version'
+  inputs:
+    scriptSource: 'inline'
+    script: |
+      import sys
+      
+      print(sys.version)
+
+- script: echo Good night, ING!
+  displayName: 'Good night script'

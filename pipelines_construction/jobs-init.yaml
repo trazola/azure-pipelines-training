@@ -1,0 +1,35 @@
+jobs:
+- job: FirstJob
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - script: echo Hello, ING!
+    displayName: 'Hello script'
+
+  - script: echo Good night, ING!
+    displayName: 'Good night script'
+
+  - script: sleep 10
+
+- job: ThirdJob
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - script: echo Hello, ING!
+    displayName: 'Hello script'
+
+  - script: echo Good night, ING!
+    displayName: 'Good night script'
+
+  - script: sleep 10
+
+- job: SecondJob
+  pool:
+    name: CDaaSLinux
+  dependsOn: FirstJob
+  steps:
+  - script: echo Hello, ING!
+    displayName: 'Hello script'
+
+  - script: echo Good night, ING!
+    displayName: 'Good night script'

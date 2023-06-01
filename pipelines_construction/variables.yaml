@@ -1,0 +1,6 @@
+variables:
+  myVariable: 'myValue'
+
+steps:
+- script: echo $(myVariable)
+
